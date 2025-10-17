@@ -7,5 +7,6 @@ parser = compile(grammar)
 
 hoa_text = open("test.hoa").read()
 
-ast = parser.parse(hoa_text)
-print(ast)
+ast = parser.parse(hoa_text, start="automaton",  trace=True)
+print(json.dumps(ast, indent=2))
+

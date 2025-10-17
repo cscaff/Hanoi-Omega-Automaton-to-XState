@@ -1,6 +1,7 @@
 @@grammar::HOA
-@@whitespace :: /[ \t\r\n]+/
+@@whitespace :: /[ \t\r]+/
 
+newline = /\n*/ ;
 identifier = /[a-zA-Z_][0-9a-zA-Z_-]*/ ;
 integer = /0|[1-9][0-9]*/ ;
 boolean = /[tf]/ ;
@@ -8,20 +9,21 @@ string = /"(\\.|[^\\"])*"/ ;
 headername = /[a-zA-Z_][0-9a-zA-Z_-]*:/ ;
 aname = /@[0-9a-zA-Z_-]+/ ;
 
-automaton = header '--BODY--' body '--END--' ;
+automaton = header '--BODY--' newline body newline '--END--' ;
 header = format_version {header_item}* ;
-format_version = 'HOA:' identifier ;
+format_version = 'HOA:' identifier newline;
 
-header_item = states
-            | start
-            | ap
-            | alias
-            | acceptance
-            | acc_name
-            | tool
-            | name
-            | properties
-            | other_header
+header_item = 
+            | states newline
+            | start newline
+            | ap newline
+            | alias newline
+            | acceptance newline
+            | acc_name newline
+            | tool newline
+            | name newline 
+            | properties newline
+            | other_header newline
             ;
 
 states = 'States:' integer ;
@@ -37,23 +39,41 @@ other_header = headername {(boolean|integer|string|identifier)}* ;
 
 state_conj = integer {('&' integer)}* ;
 
-acceptance_cond = identifier '(' ['!'] integer ')'
+acceptance_cond = acc_or ;
+
+acc_or = acc_and { '|' acc_and }* ;
+
+acc_and = acc_primary { '|' acc_primary }* ;
+
+acc_primary =
+            | identifier '(' ['!'] integer ')'
             | '(' acceptance_cond ')'
-            | acceptance_cond '&' acceptance_cond
-            | acceptance_cond '|' acceptance_cond
             | boolean
             ;
 
-body = {state}+;
+body = {state_name {edge}*}* ;
 
-state = 'State:' integer {transition}+ ;
-transition = '[' label_expr ']' integer ;
+state_name = 'State:' [label] integer [string] [acc_sig] newline ;
 
-label_expr = boolean
-        | integer
-        | aname
-        | '!' label_expr
-        | '(' label_expr ')'
-        | label_expr '&' label_expr
-        | label_expr '|' label_expr
-        ;
+acc_sig = '{' {integer}* '}' ;
+
+edge = [label] state_conj [acc_sig] newline ;
+
+label = '[' label_expr ']' ;
+
+
+
+label_expr = or_expr ;
+
+or_expr = and_expr { '|' and_expr }* ;
+
+and_expr = primary { '&' primary }* ;
+
+primary
+    =
+      boolean
+    | integer
+    | aname
+    | '!' label_expr
+    | '(' label_expr ')'
+    ;
