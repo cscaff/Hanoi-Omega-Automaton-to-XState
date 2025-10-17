@@ -7,3 +7,5 @@ parser = compile(grammar)
 
 hoa_text = open("test.hoa").read()
 
+ast = parser.parse(hoa_text)
+print(ast)

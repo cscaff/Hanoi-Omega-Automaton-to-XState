@@ -1,9 +1,16 @@
 @@grammar::HOA
 @@whitespace :: /[ \t\r\n]+/
 
+identifier = /[a-zA-Z_][0-9a-zA-Z_-]*/ ;
+integer = /0|[1-9][0-9]*/ ;
+boolean = /[tf]/ ;
+string = /"(\\.|[^\\"])*"/ ;
+headername = /[a-zA-Z_][0-9a-zA-Z_-]*:/ ;
+aname = /@[0-9a-zA-Z_-]+/ ;
+
 automaton = header '--BODY--' body '--END--' ;
 header = format_version {header_item}* ;
-format_version = 'HOA:' IDENTIFIER ;
+format_version = 'HOA:' identifier ;
 
 header_item = states
             | start
@@ -17,43 +24,36 @@ header_item = states
             | other_header
             ;
 
-states = 'States:' INT ;
+states = 'States:' integer ;
 start = 'Start:' state_conj ;
-ap = 'AP:' INT {STRING}* ;
-alias = 'Alias:' ANAME label_expr ;
-acceptance = 'Acceptance:' INT acceptance_cond ;
-acc_name = 'acc-name:' IDENTIFIER {(BOOLEAN|INT|IDENTIFIER)}* ;
-tool = 'tool:' STRING [STRING] ;
-name = 'name:' STRING ;
-properties = 'properties:' {IDENTIFIER}* ;
-other_header = HEADERNAME {(BOOLEAN|INT|STRING|IDENTIFIER)}* ;
+ap = 'AP:' integer {string}* ;
+alias = 'Alias:' aname label_expr ;
+acceptance = 'Acceptance:' integer acceptance_cond ;
+acc_name = 'acc-name:' identifier {(boolean|integer|identifier)}* ;
+tool = 'tool:' string [string] ;
+name = 'name:' string ;
+properties = 'properties:' {identifier}* ;
+other_header = headername {(boolean|integer|string|identifier)}* ;
 
-state_conj = INT {('&' INT)}* ;
+state_conj = integer {('&' integer)}* ;
 
-acceptance_cond = IDENTIFIER '(' ['!'] INT ')'
+acceptance_cond = identifier '(' ['!'] integer ')'
             | '(' acceptance_cond ')'
             | acceptance_cond '&' acceptance_cond
             | acceptance_cond '|' acceptance_cond
-            | BOOLEAN
+            | boolean
             ;
 
 body = {state}+;
 
-state = 'State:' INT {transition}+ ;
-transition = '[' label_expr ']' INT ;
+state = 'State:' integer {transition}+ ;
+transition = '[' label_expr ']' integer ;
 
-label_expr = BOOLEAN
-        | INT
-        | ANAME
+label_expr = boolean
+        | integer
+        | aname
         | '!' label_expr
         | '(' label_expr ')'
         | label_expr '&' label_expr
         | label_expr '|' label_expr
         ;
-
-STRING = /"(\\.|[^\\"])*"/ ;
-INT = /0|[1-9][0-9]*/ ;
-BOOLEAN = /[tf]/ ;
-HEADERNAME = /[a-zA-Z_][0-9a-zA-Z_-]*:/ ;
-IDENTIFIER = /[a-zA-Z_][0-9a-zA-Z_-]*/ ;
-ANAME = /@[0-9a-zA-Z_-]+/ ;
