@@ -1,0 +1,24 @@
+format_version: "HOA:" IDENTIFIER
+
+states: "States:" INT
+start: "Start:" state_conj
+ap: "AP:" INT STRING*
+acc_name: "acc-name:" IDENTIFIER (BOOLEAN|INT|IDENTIFIER)*
+name: "name:" STRING
+acceptance: "Acceptance:" INT acceptance_cond
+
+acceptance_cond: IDENTIFIER "(" "!"? INT ")"
+                | "(" acceptance_cond ")"
+                | acceptance_cond "&" acceptance_cond
+                | acceptance_cond "|" acceptance_cond
+                | BOOLEAN
+
+state_conj: INT ("&" INT)*
+
+BOOLEAN: "true" | "false"
+
+%import common.CNAME       -> IDENTIFIER
+%import common.ESCAPED_STRING -> STRING
+%import common.INT
+%import common.WS
+%ignore WS

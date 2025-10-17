@@ -1,0 +1,59 @@
+@@grammar::HOA
+@@whitespace :: /[ \t\r\n]+/
+
+automaton = header '--BODY--' body '--END--' ;
+header = format_version {header_item}* ;
+format_version = 'HOA:' IDENTIFIER ;
+
+header_item = states
+            | start
+            | ap
+            | alias
+            | acceptance
+            | acc_name
+            | tool
+            | name
+            | properties
+            | other_header
+            ;
+
+states = 'States:' INT ;
+start = 'Start:' state_conj ;
+ap = 'AP:' INT {STRING}* ;
+alias = 'Alias:' ANAME label_expr ;
+acceptance = 'Acceptance:' INT acceptance_cond ;
+acc_name = 'acc-name:' IDENTIFIER {(BOOLEAN|INT|IDENTIFIER)}* ;
+tool = 'tool:' STRING [STRING] ;
+name = 'name:' STRING ;
+properties = 'properties:' {IDENTIFIER}* ;
+other_header = HEADERNAME {(BOOLEAN|INT|STRING|IDENTIFIER)}* ;
+
+state_conj = INT {('&' INT)}* ;
+
+acceptance_cond = IDENTIFIER '(' ['!'] INT ')'
+            | '(' acceptance_cond ')'
+            | acceptance_cond '&' acceptance_cond
+            | acceptance_cond '|' acceptance_cond
+            | BOOLEAN
+            ;
+
+body = {state}+;
+
+state = 'State:' INT {transition}+ ;
+transition = '[' label_expr ']' INT ;
+
+label_expr = BOOLEAN
+        | INT
+        | ANAME
+        | '!' label_expr
+        | '(' label_expr ')'
+        | label_expr '&' label_expr
+        | label_expr '|' label_expr
+        ;
+
+STRING = /"(\\.|[^\\"])*"/ ;
+INT = /0|[1-9][0-9]*/ ;
+BOOLEAN = /[tf]/ ;
+HEADERNAME = /[a-zA-Z_][0-9a-zA-Z_-]*:/ ;
+IDENTIFIER = /[a-zA-Z_][0-9a-zA-Z_-]*/ ;
+ANAME = /@[0-9a-zA-Z_-]+/ ;
